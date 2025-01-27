@@ -108,6 +108,6 @@ jobs:
 
     - name: Execute measure script
       env:
-        name: pip-agents-core-python
+        name: $(echo '${{ github.repository }}' | awk -F '/' '{print $2}')
       run: pip-agents-core-python/script-delivery-ps/measure/measure.ps1 ${{ github.repository_owner }} ${{ env.name }} ${{ secrets.AWS_ACCESS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }} ${{ vars.AWS_S3_BUCKET }} ${{ vars.AWS_S3_BUCKET_FOLDER }} ${{ secrets.GITHUB_TOKEN }}
       shell: bash
