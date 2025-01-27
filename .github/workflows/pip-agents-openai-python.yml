@@ -1,4 +1,4 @@
-name: Pip.Agents Core Python
+name: Pip.Agents OpenAI Python
 
 # Configure trigger rules
 on: 
@@ -6,8 +6,8 @@ on:
     branches:
       - main
     paths:
-    - 'pip-agents-core-python/**'
-    - '!pip-agents-core-python/README.md'
+    - 'pip-agents-openai-python/**'
+    - '!pip-agents-openai-python/README.md'
   workflow_dispatch:
 
 env:
@@ -26,24 +26,24 @@ jobs:
     - name: Pull delivery scripts
       shell: bash
       run: |
-        rm -rf pip-agents-core-python/script-delivery-ps
+        rm -rf pip-agents-openai-python/script-delivery-ps
         git clone ${{ secrets.SCRIPTS_DELIVERY_PS_GIT_URL }} eic-templates-cicd-ps
-        cp -r eic-templates-cicd-ps/script-delivery-ps pip-agents-core-python/script-delivery-ps
+        cp -r eic-templates-cicd-ps/script-delivery-ps pip-agents-openai-python/script-delivery-ps
 
     - name: Execute increment script
       shell: bash
-      run: pip-agents-core-python/script-delivery-ps/setup/increment/increment.ps1
+      run: pip-agents-openai-python/script-delivery-ps/setup/increment/increment.ps1
 
     - name: Execute prerequisites script
       shell: bash
-      run: pip-agents-core-python/script-delivery-ps/setup/prereqs/prereqs.ps1
+      run: pip-agents-openai-python/script-delivery-ps/setup/prereqs/prereqs.ps1
 
     - name: Cache intermediate data
       uses: actions/cache@v3
       with:
         path: |
-          pip-agents-core-python/script-delivery-ps
-          pip-agents-core-python/component*.json
+          pip-agents-openai-python/script-delivery-ps
+          pip-agents-openai-python/component*.json
         key: delivery-${{ github.run_id }}-${{ github.run_attempt }}
 
   # Authoring job
@@ -59,37 +59,37 @@ jobs:
       uses: actions/cache@v3
       with:
         path: |
-          pip-agents-core-python/script-delivery-ps
-          pip-agents-core-python/component*.json
+          pip-agents-openai-python/script-delivery-ps
+          pip-agents-openai-python/component*.json
         key: delivery-${{ github.run_id }}-${{ github.run_attempt }}
 
     - name: Execute build script
       shell: bash
-      run: pip-agents-core-python/script-delivery-ps/authoring/build/build.ps1
+      run: pip-agents-openai-python/script-delivery-ps/authoring/build/build.ps1
 
     - name: Execute test script
       shell: bash
-      run: pip-agents-core-python/script-delivery-ps/authoring/test/test.ps1
+      run: pip-agents-openai-python/script-delivery-ps/authoring/test/test.ps1
 
     - name: Execute package script
       shell: bash
-      run: pip-agents-core-python/script-delivery-ps/authoring/package/package.ps1
+      run: pip-agents-openai-python/script-delivery-ps/authoring/package/package.ps1
 
     - name: Execute publish script
       shell: bash
-      run: pip-agents-core-python/script-delivery-ps/authoring/publish/publish.ps1
+      run: pip-agents-openai-python/script-delivery-ps/authoring/publish/publish.ps1
       env:
         PYPI_USER: ${{ secrets.PYPI_USER }}
         PYPI_PASS: ${{ secrets.PYPI_PASS }}
 
     - name: Execute tag script
       shell: bash
-      run: pip-agents-core-python/script-delivery-ps/authoring/tag/tag.ps1
+      run: pip-agents-openai-python/script-delivery-ps/authoring/tag/tag.ps1
 
     - name: Execute clean script
       if: always()
       shell: bash
-      run: pip-agents-core-python/script-delivery-ps/authoring/clean/clean.ps1
+      run: pip-agents-openai-python/script-delivery-ps/authoring/clean/clean.ps1
 
   # Measure job
   measure:
@@ -102,12 +102,14 @@ jobs:
       uses: actions/cache@v3
       with:
         path: |
-          pip-agents-core-python/script-delivery-ps
-          pip-agents-core-python/component*.json
+          pip-agents-openai-python/script-delivery-ps
+          pip-agents-openai-python/component*.json
         key: delivery-${{ github.run_id }}-${{ github.run_attempt }}
 
     - name: Execute measure script
       env:
         name: $(echo '${{ github.repository }}' | awk -F '/' '{print $2}')
-      run: pip-agents-core-python/script-delivery-ps/measure/measure.ps1 ${{ github.repository_owner }} ${{ env.name }} ${{ secrets.AWS_ACCESS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }} ${{ vars.AWS_S3_BUCKET }} ${{ vars.AWS_S3_BUCKET_FOLDER }} ${{ secrets.GITHUB_TOKEN }}
+        s3_bucket: ${{ vars.AWS_S3_BUCKET }}
+        s3_bucket_folder: ${{ vars.AWS_S3_BUCKET_FOLDER }}
+      run: pip-agents-openai-python/script-delivery-ps/measure/measure.ps1 ${{ github.repository_owner }} ${{ env.name }} ${{ secrets.AWS_ACCESS_KEY_ID }} ${{ secrets.AWS_SECRET_ACCESS_KEY }} ${{ vars.AWS_S3_BUCKET }} ${{ vars.AWS_S3_BUCKET_FOLDER }} ${{ secrets.GITHUB_TOKEN }}
       shell: bash
